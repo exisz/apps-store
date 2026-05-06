@@ -11,6 +11,9 @@ on:
       version_name:
         description: "versionName (e.g. 0.1.0)"
         required: true
+      apk_url:
+        description: "APK download URL"
+        required: true
       changelog:
         description: "Changelog"
         required: false
@@ -40,7 +43,7 @@ jobs:
             echo "version_code=${{ inputs.version_code }}" >> $GITHUB_OUTPUT
             echo "version_name=${{ inputs.version_name }}" >> $GITHUB_OUTPUT
             echo "changelog=${{ inputs.changelog }}" >> $GITHUB_OUTPUT
-            echo "apk_url=" >> $GITHUB_OUTPUT
+            echo "apk_url=${{ inputs.apk_url }}" >> $GITHUB_OUTPUT
           fi
 
   publish:
