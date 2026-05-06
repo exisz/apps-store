@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@source "../**/*.{astro,html,js,ts}";
 
 :root {
   --bg-base: #0a0f1a;
