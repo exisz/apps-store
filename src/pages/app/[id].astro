@@ -1,0 +1,76 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { fetchIndex, apkUrl, iconUrl, formatBytes } from '../../lib/index';
+
+export async function getStaticPaths() {
+  const data = await fetchIndex();
+  return data.apps.map(app => {
+    const slug = app.id.split('.').pop() ?? app.id;
+    return { params: { id: slug }, props: { app } };
+  });
+}
+
+const { app } = Astro.props;
+const icon = iconUrl(app.icon);
+const latest = app.versions?.[0];
+---
+
+<Layout title={`${app.name} — Rollersoft Apps`} description={app.description}>
+  <a href="/" class="text-sm text-slate-500 hover:text-slate-300 mb-6 inline-block">← Back to all apps</a>
+  
+  <div class="flex gap-5 items-start mb-8">
+    {icon
+      ? <img src={icon} alt={app.name} class="w-24 h-24 rounded-3xl object-cover bg-slate-800 flex-shrink-0" />
+      : <div class="w-24 h-24 rounded-3xl bg-slate-800 flex items-center justify-center text-5xl flex-shrink-0">📱</div>
+    }
+    <div>
+      <h2 class="text-2xl font-bold text-slate-50">{app.name}</h2>
+      <p class="text-slate-400 mt-1">{app.description}</p>
+      <div class="flex gap-3 mt-3 text-xs text-slate-500">
+        {app.license && <span>License: {app.license}</span>}
+        {app.source_repo && <a href={app.source_repo} target="_blank" class="hover:text-slate-300 underline">Source repo ↗</a>}
+        {app.homepage && <a href={app.homepage} target="_blank" class="hover:text-slate-300 underline">Homepage ↗</a>}
+      </div>
+    </div>
+  </div>
+
+  {latest && (
+    <div class="bg-blue-600 hover:bg-blue-500 transition-colors rounded-2xl p-5 mb-8">
+      <div class="text-sm text-blue-100 mb-2">Latest release</div>
+      <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <span class="text-2xl font-bold text-white">v{latest.versionName}</span>
+          <span class="text-blue-200 text-sm ml-2">({latest.size > 0 ? formatBytes(latest.size) : 'APK'})</span>
+        </div>
+        <a href={apkUrl(latest.apk)} class="bg-white text-blue-700 font-semibold text-sm px-5 py-2.5 rounded-xl hover:bg-blue-50 transition-colors">
+          ⬇ Download APK
+        </a>
+      </div>
+      {latest.changelog && (
+        <p class="text-blue-100 text-sm mt-3">{latest.changelog}</p>
+      )}
+    </div>
+  )}
+
+  {app.versions?.length > 0 && (
+    <div>
+      <h3 class="text-slate-300 font-semibold mb-3">Version history</h3>
+      <div class="flex flex-col gap-2">
+        {app.versions.map(v => (
+          <div class="bg-[#111827] border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div>
+              <span class="text-slate-200 font-medium text-sm">v{v.versionName}</span>
+              <span class="text-slate-500 text-xs ml-2">
+                {new Date(v.released_at).toLocaleDateString('en-AU', { dateStyle: 'medium' })}
+              </span>
+              {v.changelog && <p class="text-slate-500 text-xs mt-0.5">{v.changelog}</p>}
+            </div>
+            <a href={apkUrl(v.apk)} class="text-xs text-blue-400 hover:text-blue-300 whitespace-nowrap">
+              Download {v.size > 0 ? `(${formatBytes(v.size)})` : ''}
+            </a>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+</Layout>

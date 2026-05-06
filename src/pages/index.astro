@@ -1,0 +1,61 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { fetchIndex, apkUrl, iconUrl, formatBytes } from '../lib/index';
+
+const data = await fetchIndex();
+const apps = data.apps ?? [];
+const updatedAt = new Date(data.updated_at).toLocaleDateString('en-AU', { dateStyle: 'medium' });
+---
+
+<Layout title="Rollersoft Apps">
+  <div class="flex items-center gap-2 mb-6 text-xs text-slate-500">
+    <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+    <span>{apps.length} app{apps.length !== 1 ? 's' : ''} · Updated {updatedAt}</span>
+  </div>
+
+  {apps.length === 0 ? (
+    <p class="text-slate-500 text-center py-16">No apps published yet.</p>
+  ) : (
+    <div class="flex flex-col gap-3">
+      {apps.map(app => {
+        const latest = app.versions?.[0];
+        const icon = iconUrl(app.icon);
+        const slug = app.id.split('.').pop() ?? app.id;
+        return (
+          <div class="bg-[#111827] border border-slate-800 rounded-2xl p-5 flex gap-4 items-center hover:border-slate-700 transition-colors">
+            {icon
+              ? <img src={icon} alt={app.name} class="w-16 h-16 rounded-2xl object-cover flex-shrink-0 bg-slate-700" />
+              : <div class="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center text-3xl flex-shrink-0">📱</div>
+            }
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="font-semibold text-slate-100">{app.name}</span>
+                {latest && (
+                  <span class="text-xs font-medium bg-blue-900/50 text-blue-300 px-2 py-0.5 rounded-full">v{latest.versionName}</span>
+                )}
+              </div>
+              {app.description && (
+                <p class="text-sm text-slate-400 mt-1 truncate">{app.description}</p>
+              )}
+              <div class="flex gap-2 mt-3 flex-wrap items-center">
+                {latest?.apk && (
+                  <a href={apkUrl(latest.apk)} class="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                    ⬇ Download APK {latest.size > 0 ? `(${formatBytes(latest.size)})` : ''}
+                  </a>
+                )}
+                <a href={`/app/${slug}`} class="inline-flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors">
+                  Details →
+                </a>
+                {app.homepage && (
+                  <a href={app.homepage} target="_blank" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">
+                    🌐 Website
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</Layout>

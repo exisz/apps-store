@@ -1,0 +1,41 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { 
+  title = 'Rollersoft Apps', 
+  description = 'Self-hosted Android app store for the Rollersoft 全家桶'
+} = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content={description} />
+  <title>{title}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📱</text></svg>" />
+</head>
+<body class="min-h-screen bg-[#0a0f1a] text-slate-200 font-sans">
+  <header class="border-b border-slate-800 px-6 py-5">
+    <div class="max-w-4xl mx-auto flex items-center gap-3">
+      <span class="text-3xl">📱</span>
+      <div>
+        <h1 class="text-xl font-bold text-slate-50">Rollersoft Apps</h1>
+        <p class="text-sm text-slate-500">全家桶 App Store · Self-hosted Android distribution</p>
+      </div>
+    </div>
+  </header>
+  <main class="max-w-4xl mx-auto px-5 py-8">
+    <slot />
+  </main>
+  <footer class="border-t border-slate-900 text-center text-slate-600 text-xs py-8 mt-12">
+    <p>Powered by <a href="https://github.com/exisz/apps-repo" class="underline hover:text-slate-400">exisz/apps-repo</a> ·
+    <a href="https://repo.rollersoft.com.au/index.json" class="underline hover:text-slate-400">index.json</a></p>
+  </footer>
+</body>
+</html>

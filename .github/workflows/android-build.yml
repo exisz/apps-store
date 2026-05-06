@@ -1,0 +1,88 @@
+name: Android APK Build
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  capacitor-android:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Astro site
+        run: npm run build
+
+      - name: Capacitor sync (android)
+        run: npx cap sync android
+
+      - name: Decode release keystore
+        run: |
+          echo "${{ secrets.APPS_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/apps-store-release.keystore"
+          ls -la "$RUNNER_TEMP/apps-store-release.keystore"
+
+      - name: Compute version metadata
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VNAME="${GITHUB_REF_NAME#v}"
+          else
+            VNAME="0.1.0-ci"
+          fi
+          echo "version_name=$VNAME" >> "$GITHUB_OUTPUT"
+          echo "version_code=${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+
+      - name: Gradle assembleRelease (signed)
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/apps-store-release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.APPS_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: android
+          ANDROID_KEY_PASSWORD: ${{ secrets.APPS_KEY_PASSWORD }}
+          VERSION_CODE: ${{ steps.version.outputs.version_code }}
+          VERSION_NAME: ${{ steps.version.outputs.version_name }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - name: Stage signed APK
+        run: |
+          mkdir -p dist-apk
+          SRC=android/app/build/outputs/apk/release/app-release.apk
+          if [[ ! -f "$SRC" ]]; then
+            find android/app/build/outputs -type f -name "*.apk" -print
+            exit 1
+          fi
+          cp "$SRC" dist-apk/rollersoft-apps-release.apk
+
+      - name: Upload signed APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollersoft-apps-release.apk
+          path: dist-apk/rollersoft-apps-release.apk
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist-apk/rollersoft-apps-release.apk
+          fail_on_unmatched_files: true
