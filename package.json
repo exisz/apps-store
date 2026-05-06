@@ -12,10 +12,14 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@capacitor/android": "^8.3.1",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.2.2",
     "tailwindcss": "^4.2.4"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3"
   }
 }
