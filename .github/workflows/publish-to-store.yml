@@ -30,6 +30,8 @@ jobs:
     steps:
       - name: Determine version info
         id: info
+        env:
+          RELEASE_ASSETS: ${{ toJson(github.event.release.assets) }}
         run: |
           if [ "${{ github.event_name }}" = "release" ]; then
             TAG="${{ github.event.release.tag_name }}"
@@ -37,7 +39,7 @@ jobs:
             echo "version_name=${VERSION_NAME}" >> $GITHUB_OUTPUT
             echo "version_code=${{ github.run_number }}" >> $GITHUB_OUTPUT
             echo "changelog=${{ github.event.release.body }}" >> $GITHUB_OUTPUT
-            APK_URL=$(echo '${{ toJson(github.event.release.assets) }}' | python3 -c "import json,sys; assets=json.load(sys.stdin); apks=[a for a in assets if a['name'].endswith('.apk')]; print(apks[0]['browser_download_url'] if apks else '')")
+            APK_URL=$(echo "$RELEASE_ASSETS" | python3 -c "import json,sys; assets=json.load(sys.stdin); apks=[a for a in assets if a['name'].endswith('.apk')]; print(apks[0]['browser_download_url'] if apks else '')")
             echo "apk_url=${APK_URL}" >> $GITHUB_OUTPUT
           else
             echo "version_code=${{ inputs.version_code }}" >> $GITHUB_OUTPUT
