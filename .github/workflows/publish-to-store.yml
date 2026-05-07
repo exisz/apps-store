@@ -19,6 +19,9 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: write
+
 jobs:
   publish:
     uses: exisz/apps-repo/.github/workflows/publish.yml@main
