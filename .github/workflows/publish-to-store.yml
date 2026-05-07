@@ -57,5 +57,4 @@ jobs:
       version_code: ${{ needs.get-build-info.outputs.version_code }}
       version_name: ${{ needs.get-build-info.outputs.version_name }}
       changelog: ${{ needs.get-build-info.outputs.changelog }}
-    secrets:
-      APPS_REPO_PAT: ${{ secrets.APPS_REPO_PAT }}
+    secrets: inherit
