@@ -1,0 +1,15 @@
+name: Test reusable call
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: exisz/apps-repo/.github/workflows/publish.yml@main
+    with:
+      app_id: au.com.rollersoft.apps
+      app_dir: apps-store
+      apk_url: https://example.com/test.apk
+      version_code: "99"
+      version_name: "0.0.99"
+    secrets: inherit
